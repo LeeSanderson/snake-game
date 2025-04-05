@@ -21,13 +21,14 @@ class SnakeGame {
     private food: Food;
     private readonly foodEmojis = ['🍎', '🍕', '🍔', '🌮', '🍦', '🍪', '🍩', '🍫', '🥕', '🍇'];
     private direction: string;
-    private gridSize: number;
-    private tileCount: number;
+    private gridSize: number = 0;
+    private tileCount: number = 20; // Fixed number of tiles
     private score: number;
     private gameLoop: number;
     private isGameOver: boolean;
     private particles: Particle[] = [];
     private backgroundColor: string = 'white';
+    private resizeObserver: ResizeObserver;
     private readonly backgroundColors = [
         '#FFE4E1', // Misty Rose
         '#E6E6FA', // Lavender
@@ -44,14 +45,19 @@ class SnakeGame {
     constructor() {
         this.canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
         this.ctx = this.canvas.getContext('2d')!;
-        this.gridSize = 20;
-        this.tileCount = this.canvas.width / this.gridSize;
         this.score = 0;
         this.isGameOver = false;
         
         // Initialize snake
         this.snake = [{ x: 5, y: 5 }];
         this.direction = 'right';
+        
+        // Set up responsive canvas
+        this.setupCanvas();
+        
+        // Set up resize observer
+        this.resizeObserver = new ResizeObserver(() => this.setupCanvas());
+        this.resizeObserver.observe(this.canvas);
         
         // Place initial food
         this.food = this.generateFood();
@@ -61,6 +67,15 @@ class SnakeGame {
         
         // Start game loop
         this.gameLoop = setInterval(this.update.bind(this), 100);
+    }
+
+    private setupCanvas() {
+        const size = Math.min(window.innerWidth * 0.9, window.innerHeight * 0.9);
+        this.canvas.width = size;
+        this.canvas.height = size;
+        this.gridSize = size / this.tileCount;
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
     }
 
     private generateFood(): Food {
