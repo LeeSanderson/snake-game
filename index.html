@@ -15,6 +15,15 @@
             background-color: #f0f0f0;
             font-family: Arial, sans-serif;
             overflow: hidden;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        @media (orientation: portrait) and (max-aspect-ratio: 3/4) {
+            body {
+                justify-content: flex-start;
+                padding-top: max(5vh, 20px);
+            }
         }
         canvas {
             border: 2px solid #333;
