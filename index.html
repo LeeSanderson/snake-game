@@ -31,14 +31,23 @@
             max-width: 90vmin;
             max-height: 90vmin;
         }
-        .score {
+        .score-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .score, .high-score {
             font-size: min(24px, 5vmin);
             margin-bottom: 20px;
         }
     </style>
 </head>
 <body>
-    <div class="score">Score: <span id="score">0</span></div>
+    <div class="score-container">
+        <div class="score">Score: <span id="score">0</span></div>
+        <div class="high-score">High Score: <span id="highScore">0</span></div>
+    </div>
     <canvas id="gameCanvas"></canvas>
     <script type="module" src="src/game.ts"></script>
 </body>

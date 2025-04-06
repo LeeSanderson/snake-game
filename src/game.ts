@@ -36,11 +36,13 @@ class SnakeGame {
     private gridSize: number = 0;
     private tileCount: number = 20; // Fixed number of tiles
     private score: number;
+    private highScore: number;
     private gameLoop: number;
     private isGameOver: boolean;
     private particles: Particle[] = [];
     private backgroundColor: string = 'white';
     private resizeObserver: ResizeObserver;
+    private isNewHighScore: boolean = false;
     private readonly backgroundColors = [
         '#FFE4E1', // Misty Rose
         '#E6E6FA', // Lavender
@@ -58,6 +60,8 @@ class SnakeGame {
         this.canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
         this.ctx = this.canvas.getContext('2d')!;
         this.score = 0;
+        this.highScore = parseInt(localStorage.getItem('snakeHighScore') || '0');
+        document.getElementById('highScore')!.textContent = this.highScore.toString();
         this.isGameOver = false;
         
         // Initialize snake
@@ -204,6 +208,23 @@ class SnakeGame {
         this.draw();
     }
 
+    private createHighScoreCelebration() {
+        const colors = ['#FFD700', '#FFA500', '#FF69B4', '#00FF00', '#4169E1'];
+        for (let i = 0; i < 50; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = 1 + Math.random() * 3;
+            const size = 3 + Math.random() * 3;
+            this.particles.push({
+                x: Math.random() * this.canvas.width,
+                y: Math.random() * this.canvas.height,
+                dx: Math.cos(angle) * speed,
+                dy: Math.sin(angle) * speed,
+                life: 1,
+                color: colors[Math.floor(Math.random() * colors.length)]
+            });
+        }
+    }
+
     private createExplosion(x: number, y: number) {
         const colors = ['#FFD700', '#FFA500', '#FF6347', '#FF69B4'];
         for (let i = 0; i < 20; i++) {
@@ -280,14 +301,31 @@ class SnakeGame {
     private gameOver() {
         clearInterval(this.gameLoop);
         this.isGameOver = true;
+        
+        // Check for new high score
+        if (this.score > this.highScore) {
+            this.highScore = this.score;
+            localStorage.setItem('snakeHighScore', this.score.toString());
+            document.getElementById('highScore')!.textContent = this.highScore.toString();
+            this.isNewHighScore = true;
+            this.createHighScoreCelebration();
+        }
+
         this.ctx.fillStyle = 'black';
         
         // Center Game Over text
         this.ctx.font = '30px Arial';
-        const gameOverText = 'Game Over!';
+        const gameOverText = this.isNewHighScore ? 'New High Score!' : 'Game Over!';
         const gameOverMetrics = this.ctx.measureText(gameOverText);
         const gameOverX = (this.canvas.width - gameOverMetrics.width) / 2;
         this.ctx.fillText(gameOverText, gameOverX, this.canvas.height / 2);
+        
+        // Center score text
+        this.ctx.font = '24px Arial';
+        const scoreText = `Score: ${this.score}`;
+        const scoreMetrics = this.ctx.measureText(scoreText);
+        const scoreX = (this.canvas.width - scoreMetrics.width) / 2;
+        this.ctx.fillText(scoreText, scoreX, this.canvas.height / 2 - 40);
         
         // Center restart text
         this.ctx.font = '20px Arial';
@@ -301,9 +339,11 @@ class SnakeGame {
         this.direction = 'right';
         this.score = 0;
         this.isGameOver = false;
+        this.isNewHighScore = false;
         this.backgroundColor = 'white';
         this.food = this.generateFood();
         document.getElementById('score')!.textContent = '0';
+        this.particles = [];
         this.gameLoop = setInterval(this.update.bind(this), 100);
     }
 }
