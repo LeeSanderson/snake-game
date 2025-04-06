@@ -5,6 +5,7 @@ type Position = {
 
 type Food = Position & {
     emoji: string;
+    points: number;
 };
 
 type Particle = Position & {
@@ -19,7 +20,18 @@ class SnakeGame {
     private ctx: CanvasRenderingContext2D;
     private snake: Position[];
     private food: Food;
-    private readonly foodEmojis = ['🍎', '🍕', '🍔', '🌮', '🍦', '🍪', '🍩', '🍫', '🥕', '🍇'];
+    private readonly foodItems = [
+        { emoji: '🍎', points: 20 },  // Apple scores highest
+        { emoji: '🍕', points: 15 },
+        { emoji: '🍔', points: 15 },
+        { emoji: '🌮', points: 12 },
+        { emoji: '🍦', points: 10 },
+        { emoji: '🍪', points: 10 },
+        { emoji: '🍩', points: 8 },
+        { emoji: '🍫', points: 8 },
+        { emoji: '🥕', points: 5 },
+        { emoji: '🍇', points: 5 }
+    ];
     private direction: string;
     private gridSize: number = 0;
     private tileCount: number = 20; // Fixed number of tiles
@@ -86,8 +98,8 @@ class SnakeGame {
     private generateFood(): Food {
         const x = Math.floor(Math.random() * this.tileCount);
         const y = Math.floor(Math.random() * this.tileCount);
-        const emoji = this.foodEmojis[Math.floor(Math.random() * this.foodEmojis.length)];
-        return { x, y, emoji };
+        const foodItem = this.foodItems[Math.floor(Math.random() * this.foodItems.length)];
+        return { x, y, ...foodItem };
     }
 
     private handlePointerEvent(e: MouseEvent | TouchEvent) {
@@ -180,7 +192,7 @@ class SnakeGame {
 
         // Check if food is eaten
         if (head.x === this.food.x && head.y === this.food.y) {
-            this.score += 10;
+            this.score += this.food.points;
             document.getElementById('score')!.textContent = this.score.toString();
             this.createExplosion(head.x * this.gridSize + this.gridSize/2, head.y * this.gridSize + this.gridSize/2);
             this.backgroundColor = this.backgroundColors[Math.floor(Math.random() * this.backgroundColors.length)];
