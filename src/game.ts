@@ -64,6 +64,11 @@ class SnakeGame {
         
         // Set up event listeners
         document.addEventListener('keydown', this.handleKeyPress.bind(this));
+        this.canvas.addEventListener('click', this.handlePointerEvent.bind(this));
+        this.canvas.addEventListener('touchstart', (e: TouchEvent) => {
+            e.preventDefault(); // Prevent scrolling
+            this.handlePointerEvent(e);
+        });
         
         // Start game loop
         this.gameLoop = setInterval(this.update.bind(this), 100);
@@ -83,6 +88,48 @@ class SnakeGame {
         const y = Math.floor(Math.random() * this.tileCount);
         const emoji = this.foodEmojis[Math.floor(Math.random() * this.foodEmojis.length)];
         return { x, y, emoji };
+    }
+
+    private handlePointerEvent(e: MouseEvent | TouchEvent) {
+        if (this.isGameOver) {
+            this.restart();
+            return;
+        }
+
+        const rect = this.canvas.getBoundingClientRect();
+        let clientX: number, clientY: number;
+
+        if (e instanceof TouchEvent) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+
+        // Convert click/touch position to canvas coordinates
+        const x = ((clientX - rect.left) / rect.width) * this.canvas.width;
+        const y = ((clientY - rect.top) / rect.height) * this.canvas.height;
+
+        // Get snake head position in pixels
+        const headX = this.snake[0].x * this.gridSize + this.gridSize / 2;
+        const headY = this.snake[0].y * this.gridSize + this.gridSize / 2;
+
+        // Calculate angle between snake head and click/touch position
+        const angle = Math.atan2(y - headY, x - headX);
+        const degrees = angle * (180 / Math.PI);
+
+        // Convert angle to direction
+        // Use 45-degree sectors for each direction
+        if (degrees >= -45 && degrees < 45) {
+            if (this.direction !== 'left') this.direction = 'right';
+        } else if (degrees >= 45 && degrees < 135) {
+            if (this.direction !== 'up') this.direction = 'down';
+        } else if (degrees >= -135 && degrees < -45) {
+            if (this.direction !== 'down') this.direction = 'up';
+        } else {
+            if (this.direction !== 'right') this.direction = 'left';
+        }
     }
 
     private handleKeyPress(e: KeyboardEvent) {
