@@ -43,6 +43,7 @@ class SnakeGame {
     private backgroundColor: string = 'white';
     private resizeObserver: ResizeObserver;
     private isNewHighScore: boolean = false;
+    private isPaused: boolean = false;
     private readonly backgroundColors = [
         '#FFE4E1', // Misty Rose
         '#E6E6FA', // Lavender
@@ -149,10 +150,19 @@ class SnakeGame {
     }
 
     private handleKeyPress(e: KeyboardEvent) {
-        if (this.isGameOver && e.code === 'Space') {
-            this.restart();
+        if (this.isGameOver) {
+            if (e.key === 'Enter' || e.code === 'Space') {
+                this.restart();
+            }
             return;
         }
+
+        if (e.code === 'Space') {
+            this.isPaused = !this.isPaused;
+            return;
+        }
+
+        if (this.isPaused) return;
 
         switch (e.key) {
             case 'ArrowUp':
@@ -171,6 +181,10 @@ class SnakeGame {
     }
 
     private update() {
+        if (this.isPaused) {
+            this.drawPauseScreen();
+            return;
+        }
         const head = { ...this.snake[0] };
 
         // Move snake
@@ -263,6 +277,15 @@ class SnakeGame {
             this.ctx.fill();
         });
         this.ctx.globalAlpha = 1;
+    }
+
+    private drawPauseScreen() {
+        this.draw(); // Draw the game state in the background
+        this.ctx.save();
+        this.ctx.font = '24px Arial';
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        this.ctx.fillText('⏸️', this.gridSize, this.gridSize);
+        this.ctx.restore();
     }
 
     private draw() {
